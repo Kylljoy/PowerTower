@@ -1,7 +1,7 @@
 import Graphics2D;
 import TwoCansAlpha4;
 import Graphics2DText;
-import Game;
+
 class GameplayScene:AbstractScene{
 
     static field Tiles=[];
