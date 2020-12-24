@@ -1,0 +1,29 @@
+import Graphics2D;
+
+class tile{
+    field x=0;
+    field y=0;
+
+    constructor(x,y){
+        this.x=x;
+        this.y=y;
+    }
+    
+    function isVoid(){
+        return true;
+    }
+
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx,this.y-camy,20,20,0,0,0);
+    }
+
+    function kick(ox,oy){
+
+    }
+
+    function obstructs(tx,ty){
+        return false;
+    }
+
+
+}

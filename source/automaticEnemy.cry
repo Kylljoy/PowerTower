@@ -1,0 +1,16 @@
+import Graphics2D;
+class automaticEnemy:enemy{
+
+    
+    constructor(x,y):base(x,y){
+        this.chamberTimeLimit=5;
+        this.reloadTimeLimit=700;
+        this.clip=30;
+        this.clipsize=30;
+    }
+
+    function draw(camx,camy){
+        Graphics2D.Draw.ellipse(this.x-camx,this.y-camy,20,20,50,0,0);
+    }
+
+}

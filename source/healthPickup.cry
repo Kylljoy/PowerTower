@@ -1,0 +1,11 @@
+class healthPickup:pickup{
+    constructor(x,y):base(x,y){
+        this.r=50;
+        this.g=255;
+        this.b=50;
+    }
+    
+    function getType(){
+        return 1;
+    }
+}

@@ -1,0 +1,11 @@
+class ammoPickup:pickup{
+    constructor(x,y):base(x,y){
+        this.r=255;
+        this.g=200;
+        this.b=60;
+    }
+
+    function getType(){
+        return 2;
+    }
+}

@@ -1,0 +1,55 @@
+import Graphics2D;
+import Math;
+
+class bullet{
+    field x;
+    field y;
+    field dx;
+    field dy;
+    field owner;
+    
+
+    constructor(originx,originy,targetx,targety,owner=null){
+        this.x=originx;
+        this.y=originy;
+        this.dx=10*(targetx-originx)/((((targetx-originx)**2)+((targety-originy)**2))**0.5);
+        this.dy=10*(targety-originy)/((((targetx-originx)**2)+((targety-originy)**2))**0.5);
+        this.owner=owner;
+    }
+
+    function assignOwner(owner){
+        this.owner=owner;
+    }
+
+    function getOwner(){
+        return this.owner;
+    }
+
+    function draw(camx,camy){
+        Graphics2D.Draw.ellipse(this.x-camx-2,this.y-camy-2,4,4,255,255,0);
+    }
+
+    function getX(){
+        return this.x;
+    }
+
+    function getY(){
+        return this.y;
+    }
+
+    function move(){
+        if(this.x>600||this.y>600||this.x<0||this.y<0){
+            return false;
+        }
+        for(j=0;j<20;j++){
+            for(k=0;k<20;k++){
+                if(GameplayScene.Tiles[j][k].obstructs(this.x+this.dx,this.y+this.dy)){
+                    return false;
+                }
+            }
+        }
+        this.x+=this.dx;
+        this.y+=this.dy;
+        return true;
+    }
+}

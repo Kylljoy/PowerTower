@@ -1,0 +1,288 @@
+import Graphics2D;
+import Math;
+import Random;
+
+enum Mode {FIGHT,COVER}
+
+class enemy{
+    field x;
+    field y;
+    field path=[];
+    field targetx=0;
+    field targety=0;
+    field mode=Mode.FIGHT;
+    field alive=true;
+    field chamberTime=0;
+    field chamberTimeLimit=100;
+    field reloadTime=0;
+    field reloadTimeLimit=500;
+    field clip=5;
+    field clipsize=5;
+    field thinkTime=0;
+    
+    constructor(x,y){
+        this.x=x;
+        this.y=y;
+        this.targetx=x;
+        this.targety=y;
+    }
+    
+    function canShoot(){
+        return(this.clip>0&&this.reloadTime==0&&this.chamberTime==0);
+    }
+
+    function waitShoot(){
+        if(this.clip==0&&this.reloadTime==0){
+            this.clip=this.clipsize;
+        }
+        if(this.chamberTime>0){
+            this.chamberTime--;
+        }
+        if(this.reloadTime>0){
+            this.reloadTime--;
+        }
+    }
+
+    function tryShoot(tx,ty){
+        if(this.clip==0&&this.reloadTime==0){
+            this.clip=this.clipsize;
+        }
+        if(this.chamberTime==0&&this.clip>0){
+            GameplayScene.Bullets.add(new bullet(this.x,this.y,tx+Random.randomInt(-30,30),ty+Random.randomInt(-30,30),this));
+            this.chamberTime=this.chamberTimeLimit;
+            this.clip--;
+         }else if(this.chamberTime>0){
+            this.chamberTime--;
+        }
+        if(this.clip==0){
+            this.reloadTime=this.reloadTimeLimit;
+        }
+        if(this.reloadTime>0){
+            this.reloadTime--;
+        }
+        }
+
+    function draw(camx,camy){
+        Graphics2D.Draw.ellipse(this.x-camx,this.y-camy,20,20,150,0,0);
+    }
+
+    static function isSuitableCover(tx,ty,px,py){
+        dx=px-tx;
+        dy=py-ty;
+        for(i=0.0;i<1.0;i+=0.05){
+            if(GameplayScene.Tiles[Math.floor((tx+(dx*i))/20)][Math.floor((ty+(dy*i))/20)].obstructs((tx+(dx*i)),(ty+(dy*i)))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function isInCover(px,py){
+        return enemy.isSuitableCover(this.x,this.y,px,py);
+    }
+
+
+
+    function doTheAI(px,py){
+        if(!this.alive){
+            return false;
+        }
+        index=0;
+        for(b:GameplayScene.Bullets){
+            if((((this.x+10-b.getX())**2)+((this.y+10-b.getY())**2)**0.5)<=25&&b.getOwner()!=this){
+                this.alive=false;
+                GameplayScene.Bullets.remove(index);
+                if(Random.randomInt(0,4)<2){
+                    GameplayScene.Pickups.add(new ammoPickup(this.x+10,this.y+10));
+                }else if(Random.randomBool()){
+                    GameplayScene.Pickups.add(new healthPickup(this.x,this.y));
+                }
+                return false;
+            }else{
+                index++;
+            }
+        }
+        this.waitShoot();
+        if(this.canShoot()){
+            if(!this.isInCover(px,py)){
+                this.tryShoot(px,py);
+            }
+        }
+        if(this.thinkTime>100){
+            this.thinkTime=0;
+        if(this.canShoot()){
+            this.findOpen(px,py);
+            }else{
+                this.findCover(px,py);
+                this.waitShoot();
+            }
+        }else{
+            this.thinkTime++;
+        }
+        this.followPath();
+        return true;
+    }
+
+    function followPath(){
+        if(this.path.length==0){
+            return;
+        }
+        if(this.x==this.path[0][0]*20&&(this.y)==this.path[0][1]*20){
+            this.path.reverse();
+            this.path.pop();
+            this.path.reverse();
+        }
+        if(this.path.length==0){
+            return;
+        }
+        if(this.path[0][0]*20>this.x){
+            this.x+=5;
+        }
+        if(this.path[0][0]*20<this.x){
+            this.x-=5;
+        }
+        if(this.path[0][1]*20>this.y){
+            this.y+=5;
+        }
+        if(this.path[0][1]*20<this.y){
+            this.y-=5;
+        }
+    }
+
+    static function getPathLength(ax,ay,bx,by){
+        path=enemy.constructPath(ax,ay,bx,by);
+        if(path==null){
+            return 999;
+        }else{
+            return path.length;
+        }
+    }
+
+    static function constructPath(ax,ay,bx,by){
+        //Try : Down, Up, Left, Right
+        grid=[];
+        frontier=[];
+        newfrontier=[];
+        for(j=0;j<30;j++){
+            grid.add([]);
+            for(k=0;k<30;k++){
+                grid[j].add(null);
+            }
+        }
+        grid[ax][ay]=[-1,-1];
+        frontier.add([ax,ay]);
+        while(true){
+            newfrontier=[];
+            for(f:frontier){
+                possibilities=[[f[0]+1,f[1]],[f[0]-1,f[1]],[f[0],f[1]+1],[f[0],f[1]-1]];
+                for(p:possibilities){
+                    //Add any unadded links to the frontier
+                    if(p[0]<30&&p[0]>=0&&p[1]<30&&p[1]>=0&&GameplayScene.Tiles[p[0]][p[1]].isVoid()&&grid[p[0]][p[1]]==null){
+                        newfrontier.add(p);
+                        grid[p[0]][p[1]]=[f[0],f[1]];
+                    }
+                }
+            }
+            frontier=newfrontier.clone();
+            if(grid[bx][by]!=null||frontier.length==0){
+                break;
+            }
+        }
+        if(grid[bx][by]==null){
+            return null;
+        }
+        curr=[bx,by];
+        path=[];
+        while(curr[0]!=-1&&curr[1]!=-1){
+            path.add([curr[0],curr[1]]);
+            curr=grid[curr[0]][curr[1]];
+        }
+        path.reverse();
+        return path;
+    }
+
+    function findOpen(px,py){
+        if(!enemy.isSuitableCover(this.targetx,this.targety,px,py)){
+            return;
+        }
+        currentX=this.x/20;
+        currentY=this.y/20;
+        possibles=[];
+        for(x=-10;x<10;x++){
+            for(y=-10;y<10;y++){
+                if(currentX+x>19||currentY+y>19||currentX+x<0||currentY+y<0){
+                    continue;
+                }
+                if(!GameplayScene.Tiles[currentX+x][currentY+y].isVoid()){
+                    continue;
+                }
+                if(!enemy.isSuitableCover(20*(currentX+x),20*(currentY)+y,px,py)){
+                    possibles.add([(currentX+x),(currentY+y)]);
+                }
+            }
+        }
+        if(possibles.length==0){
+            return;
+        }
+        best=[];
+        bestDist=9999;
+        for(p:possibles){
+            if(enemy.getPathLength(this.x/20,this.y/20,p[0],p[1])<bestDist){
+                bestDist=enemy.getPathLength(this.x/20,this.y/20,p[0],p[1]);
+                best=p;
+            }
+        }
+        
+        this.path=(enemy.constructPath(this.x/20,this.y/20,best[0],best[1]));
+        if(this.path==null){
+            this.path=[];
+            return;
+        }
+        this.targetx=best[0]*20;
+        this.targety=best[1]*20;  
+        return;
+        }
+
+    function findCover(px,py){
+        if(enemy.isSuitableCover(this.targetx,this.targety,px,py)){
+            return;
+        }
+        currentX=this.x/20;
+        currentY=this.y/20;
+        possibles=[];
+        for(x=-10;x<10;x++){
+            for(y=-10;y<10;y++){
+                if(currentX+x>19||currentY+y>19||currentX+x<0||currentY+y<0){
+                    continue;
+                }
+                if(!GameplayScene.Tiles[currentX+x][currentY+y].isVoid()){
+                    continue;
+                }
+                if(enemy.isSuitableCover(20*(currentX+x),20*(currentY)+y,px,py)){
+                    possibles.add([(currentX+x),(currentY+y)]);
+                }
+            }
+        }
+        if(possibles.length==0){
+            return;
+        }
+        best=[];
+        bestDist=9999;
+        for(p:possibles){
+            if(enemy.getPathLength(this.x/20,this.y/20,p[0],p[1])<bestDist){
+                bestDist=enemy.getPathLength(this.x/20,this.y/20,p[0],p[1]);
+                best=p;
+            }
+        }
+        
+        this.path=(enemy.constructPath(this.x/20,this.y/20,best[0],best[1]));
+        if(this.path==null){
+            this.path=[];
+            return;
+        }
+        this.targetx=best[0]*20;
+        this.targety=best[1]*20;  
+        return;
+    }
+
+}

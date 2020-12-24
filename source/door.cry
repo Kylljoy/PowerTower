@@ -1,0 +1,104 @@
+import Graphics2D;
+
+enum Facing {LEFT,RIGHT,UP,DOWN}
+enum Direction {LEFT,RIGHT}
+class door:tile{
+    field open=false;
+    field openingDirection=Direction.LEFT;
+    field orientation;
+
+    constructor(x,y,orientation,openingDirection=Direction.LEFT,open=false):base(x,y){
+        this.orientation=orientation;
+        this.open=open;
+        this.openingDirection=openingDirection;
+    }
+
+    function obstructs(tx,ty){
+        if(this.open){
+            return false;
+        }
+        switch(this.orientation){
+            case Facing.DOWN:
+                return (tx>=this.x&&tx<=this.x+20&&ty>=this.y+10&&ty<=this.y+20);
+            break;
+            case Facing.UP:
+                return (tx>=this.x&&tx<=this.x+20&&ty>=this.y&&ty<=this.y+10);
+            break;
+            case Facing.LEFT:
+                return (tx>=this.x&&tx<=this.x+10&&ty>=this.y&&ty<=this.y+20);
+            break;
+            case Facing.RIGHT:
+                return (tx+10>=this.x&&tx<=this.x+20&&ty>=this.y&&ty<=this.y+20);
+            break;
+            default:
+                return false;
+            break;
+        }
+    }
+    function kick(ox,oy){
+        this.open=true;
+    }
+
+    function isVoid(){
+        return this.open;
+    }
+    function draw(camx,camy){
+        if(!this.open){
+            switch(this.orientation){
+                case Facing.DOWN:
+                    Graphics2D.Draw.rectangle(this.x,this.y+15,20,5,100,100,0);
+                break;
+                case Facing.LEFT:
+                    Graphics2D.Draw.rectangle(this.x,this.y,5,20,100,100,0);
+                break;
+                case Facing.UP:
+                    Graphics2D.Draw.rectangle(this.x,this.y,20,5,100,100,0);
+                break;
+                case Facing.RIGHT:
+                    Graphics2D.Draw.rectangle(this.x+15,this.y,5,20,100,100,0);
+                break;
+                default:
+                break;
+            }
+        }else{
+            if(this.openingDirection==Direction.LEFT){
+            switch(this.orientation){
+                case Facing.DOWN:
+                    Graphics2D.Draw.rectangle(this.x,this.y,5,20,100,100,0);
+                break;
+                case Facing.LEFT:
+                    Graphics2D.Draw.rectangle(this.x,this.y+15,20,5,100,100,0);
+                break;
+                case Facing.UP:
+                   Graphics2D.Draw.rectangle(this.x+15,this.y,5,20,100,100,0);
+                break;
+                case Facing.RIGHT:
+                    Graphics2D.Draw.rectangle(this.x,this.y,20,5,100,100,0);
+                break;
+                default:
+                break;
+            }
+            }else{
+                switch(this.orientation){
+                case Facing.DOWN:
+                    Graphics2D.Draw.rectangle(this.x+15,this.y,5,20,100,100,0);
+                break;
+                case Facing.LEFT:
+                    Graphics2D.Draw.rectangle(this.x,this.y,20,5,100,100,0);
+                break;
+                case Facing.UP:
+                    Graphics2D.Draw.rectangle(this.x,this.y,5,20,100,100,0);
+                break;
+                case Facing.RIGHT:
+                    Graphics2D.Draw.rectangle(this.x,this.y+15,20,5,100,100,0);
+                break;
+                default:
+                break;
+            }
+            }
+                
+
+
+        }
+    }
+}

@@ -1,0 +1,27 @@
+class levelOne:level{
+    function init(lives){
+        ref=levelManager.masterLevel;
+        ref.life=3;
+        ref.reset();
+        GameplayScene.makeVoid(1,1,28,24);
+        GameplayScene.makeVoid(13,25,14,25);
+        GameplayScene.makeVoid(10,26,20,28);
+        GameplayScene.makeDoor(13,25,Facing.UP,Direction.RIGHT);
+        GameplayScene.makeDoor(14,25,Facing.UP,Direction.LEFT);
+        for(j=2;j<28;j+=6){
+            for(k=2;k<24;k+=6){
+                GameplayScene.makePillar(j,k);
+            }
+        }
+        for(k=10;k<16;k++){
+            GameplayScene.makeCrate(k,21);
+            GameplayScene.makeCrate(k-5,10);
+        }
+        ref.addEnemy(2*10,4*10);
+        ref.addEnemy(9*20,12*10);
+        ref.addEnemy(18*20,22*20);
+        ref.setPosition(15*20,28*20);
+
+    }
+
+}

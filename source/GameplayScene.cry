@@ -1,0 +1,243 @@
+import Graphics2D;
+import TwoCansAlpha4;
+import Graphics2DText;
+import Game;
+class GameplayScene:AbstractScene{
+
+    static field Tiles=[];
+    static field Enemies=[];
+    static field Bullets=[];
+    static field TextRender=FontResource.fromSystem("Arial").getRenderer().setColor(255,255,255).setSize(15);
+    static field Pickups=[];
+    static field camx=0;
+    static field camy=0;
+
+    field chamberTime=0;
+    field chamberTimeLimit=50;
+    field reloadTime=0;
+    field reloadTimeLimit=200;
+    field clip=5;
+    field clipsize=5;
+    field ammo=10;
+    field thinkTime=0;
+
+    field life=3;
+
+    field pcx=29*10;
+    field pcy=20;
+
+    constructor(){
+        for(j=0;j<30;j++){
+            GameplayScene.Tiles.add([]);
+            for(k=0;k<30;k++){
+                GameplayScene.Tiles[j].add(new tileWall(j*20,k*20));
+            }
+        }
+        levelManager.masterLevel=this;
+        levelManager.nextLevel(this.life);
+   }
+
+   function reset(){
+       for(j=0;j<30;j++){
+            for(k=0;k<30;k++){
+                GameplayScene.Tiles[j][k]=new tileWall(j*20,k*20);
+            }
+        }
+        GameplayScene.Enemies=[];
+   }
+
+   function addEnemy(x,y){
+       GameplayScene.Enemies.add(new enemy(x,y));
+   }
+
+   function setPosition(x,y){
+       this.pcx=x;
+       this.pcy=y;
+   }
+
+   
+
+   static function drawHeartAt(x,y){
+       Graphics2D.Draw.ellipse(x,y,15,15,100,0,0);
+       Graphics2D.Draw.ellipse(x+12,y,15,15,100,0,0);
+       Graphics2D.Draw.triangle(x+1,y+10,x+24,y+10,x+13,y+25,100,0,0);
+       
+   }
+
+
+   function getPCX(){
+       return this.pcx;
+   }
+
+   function getPCY(){
+       return this.pcy;
+   }
+
+   static function makePillar(x,y){
+        GameplayScene.Tiles[x][y]=new pillar(x*20,y*20);
+   }
+
+   static function makeCrate(x,y){
+        GameplayScene.Tiles[x][y]=new crate(x*20,y*20);
+   }
+
+
+    static function makeDoor(x,y,orientation,direction=Direction.LEFT,open=false){
+        GameplayScene.Tiles[x][y]=new door(x*20,y*20,orientation,direction,open);
+    }
+
+    static function makeVoid(ax,ay,bx,by){
+        for(j=ax;j<=bx&&j<30;j++){
+            for(k=ay;k<=by&&k<30;k++){
+                GameplayScene.Tiles[j][k]=new tile(j*20,k*20);
+            }
+        }
+    }
+
+    static function makeWhite(ax,ay,bx,by){
+        for(j=ax;j<=bx&&j<30;j++){
+            for(k=ay;k<=by&&k<30;k++){
+                GameplayScene.Tiles[j][k]=new whiteTile(j*20,k*20);
+            }
+        }
+    }
+
+    static function makeBlue(ax,ay,bx,by){
+        for(j=ax;j<=bx&&j<30;j++){
+            for(k=ay;k<=by&&k<30;k++){
+                GameplayScene.Tiles[j][k]=new blueTile(j*20,k*20);
+            }
+        }
+    }
+
+    function update(manager,events){
+        left=manager.isKeyPressed(KeyboardKey.A);
+        right=manager.isKeyPressed(KeyboardKey.D);
+        up=manager.isKeyPressed(KeyboardKey.W);
+        down=manager.isKeyPressed(KeyboardKey.S);
+        kicked=manager.isKeyPressedThisFrame(KeyboardKey.SPACE);
+        if(kicked){
+            GameplayScene.Tiles[(this.pcx/20)][(this.pcy/20)].kick(this.pcx,this.pcy);
+            GameplayScene.Tiles[(this.pcx/20)+1][(this.pcy/20)].kick(this.pcx,this.pcy);
+            GameplayScene.Tiles[(this.pcx/20)-1][(this.pcy/20)].kick(this.pcx,this.pcy);
+            GameplayScene.Tiles[(this.pcx/20)][(this.pcy/20)+1].kick(this.pcx,this.pcy);
+            GameplayScene.Tiles[(this.pcx/20)][(this.pcy/20)-1].kick(this.pcx,this.pcy);
+        }
+        if(this.pcx>=10&&left&&!right&&!GameplayScene.Tiles[this.pcx/20][this.pcy/20].obstructs(this.pcx-5,this.pcy)&&!GameplayScene.Tiles[(this.pcx/20)-1][this.pcy/20].obstructs(this.pcx-5,this.pcy)){
+            this.pcx-=5;
+        }
+        if(this.pcx<=570&&right&&!left&&!GameplayScene.Tiles[this.pcx/20][this.pcy/20].obstructs(this.pcx+5,this.pcy)&&!GameplayScene.Tiles[(this.pcx/20)+1][this.pcy/20].obstructs(this.pcx+5,this.pcy)){
+            this.pcx+=5;
+        }
+        if(this.pcy<=570&&down&&!up&&!GameplayScene.Tiles[this.pcx/20][this.pcy/20].obstructs(this.pcx,this.pcy+5)&&!GameplayScene.Tiles[(this.pcx/20)][(this.pcy/20)+1].obstructs(this.pcx,this.pcy+5)){
+            this.pcy+=5;
+        }
+        if(this.pcy>=10&&up&&!down&&!GameplayScene.Tiles[this.pcx/20][this.pcy/20].obstructs(this.pcx,this.pcy-5)&&!GameplayScene.Tiles[(this.pcx/20)][(this.pcy/20)-1].obstructs(this.pcx,this.pcy-5)){
+            this.pcy-=5;
+        }
+        index=0;
+        for(g:GameplayScene.Enemies){
+            if(!g.doTheAI(this.pcx,this.pcy)){
+                GameplayScene.Enemies.remove(index);
+            }else{
+                index++;
+            }
+        }
+        for(event:events){
+            if(event.type==EventType.MOUSE_PRESS){
+                if(this.chamberTime==0&&this.clip>0){
+                GameplayScene.Bullets.add(new bullet(this.pcx,this.pcy,manager.getMousePosition()[0],manager.getMousePosition()[1],this));
+                this.chamberTime=this.chamberTimeLimit;
+                this.clip--;
+                if(this.clip==0){
+                    this.reloadTime=this.reloadTimeLimit;
+                }
+                }
+            }
+        }
+        index=0;
+        for(b:GameplayScene.Bullets){
+            if(!b.move()){
+                GameplayScene.Bullets.remove(index);
+            }else if((((b.getX()-this.pcx)**2)+((b.getY()-this.pcy)**2))**0.5<=20&&b.getOwner()!=this){
+                GameplayScene.Bullets.remove(index);
+                this.life--;                
+            }else{
+                index++;
+            }
+        }
+        if(this.clip==0&&this.reloadTime==0&&this.ammo>=this.clipsize){
+            this.clip=this.clipsize;
+            this.ammo-=this.clipsize;
+        }else if(this.clip==0&&this.reloadTime==0){
+            this.clip=this.ammo;
+            this.ammo=0;
+        }
+        if(this.chamberTime>0){
+            this.chamberTime--;
+        }
+        if(this.reloadTime>0){
+            this.reloadTime--;
+        }
+        index=0;
+        for(p:GameplayScene.Pickups){
+            if(p.pickUp(this.pcx,this.pcy)){
+                if(p.getType()==2){
+                    this.ammo+=5;
+                }
+                if(p.getType()==1){
+                    this.life++;
+                }
+                GameplayScene.Pickups.remove(index);
+            }else{
+                index++;
+            }
+        }
+
+        if(GameplayScene.Enemies.length==0){
+            GameplayScene.Pickups=[];
+            GameplayScene.Bullets=[];
+            levelManager.nextLevel(this.life);
+        }
+        if(this.life==0){
+            levelManager.reset();
+        }
+
+    }
+
+    function render(){
+        Graphics2D.Draw.fill(0,0,0);
+        for(j=0;j<30;j++){
+            for(k=0;k<30;k++){
+                GameplayScene.Tiles[j][k].draw(GameplayScene.camx,GameplayScene.camy);
+            }
+        }
+        for(g:GameplayScene.Enemies){
+            g.draw(GameplayScene.camx,GameplayScene.camy);
+        }
+        for(b:GameplayScene.Bullets){
+            b.draw(GameplayScene.camx,GameplayScene.camy);
+        }
+        
+        Graphics2D.Draw.ellipse(this.pcx-10,this.pcy-10,20,20,100,100,100);
+        if(this.life>2){
+        GameplayScene.drawHeartAt(500,0);
+        }
+        if(this.life>1){
+        GameplayScene.drawHeartAt(540,0);
+        }
+        if(this.life>0){
+        GameplayScene.drawHeartAt(580,0);
+        }
+        GameplayScene.TextRender.render(this.clip).draw(540,30);
+        Graphics2D.Draw.rectangle(565,30,2,30,255,255,255);
+        GameplayScene.TextRender.render(this.ammo).draw(570,30);
+        
+        for(p:GameplayScene.Pickups){
+            p.draw(GameplayScene.camx,GameplayScene.camy);
+        }
+        
+        }
+
+    
+}

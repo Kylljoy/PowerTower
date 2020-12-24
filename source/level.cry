@@ -1,0 +1,11 @@
+class level{
+    field ref;
+    constructor(){
+        this.ref=levelManager.masterLevel;
+    }
+
+    function init(lives){
+        levelManager.masterLevel.life=lives;
+        levelManager.masterLevel.reset();
+    }
+}

@@ -1,0 +1,17 @@
+import Graphics2D;
+class whiteTile:tile{
+
+    constructor(x,y):base(x,y){}
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx,this.y-camy,20,20,255,255,255);
+    }
+
+}
+
+class blueTile:tile{
+    constructor(x,y):base(x,y){}
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx,this.y-camy,20,20,150,150,255);
+    }
+
+}

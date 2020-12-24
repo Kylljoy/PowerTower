@@ -1,0 +1,19 @@
+import Random;
+
+class levelThree:level{
+    function init(lives){
+        ref=levelManager.masterLevel;
+        ref.life=lives;
+        ref.reset();
+        GameplayScene.makeVoid(1,1,28,28);
+        ref.setPosition(30,30);
+        for(i=0;i<22;i++){
+            GameplayScene.makeCrate(Random.randomInt(5,25),Random.randomInt(5,25));
+        }
+        for(i=0;i<5;i++){
+            ref.addEnemy(20*Random.randomInt(5,25),20*Random.randomInt(5,25));
+        }
+        
+    }
+
+}

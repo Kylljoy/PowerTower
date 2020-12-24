@@ -1,0 +1,18 @@
+import Graphics2D;
+
+class tileWall:tile{
+
+    constructor(x,y):base(x,y){
+
+    }
+    function isVoid(){
+        return false;
+    }
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx,this.y-camy,20,20,150,150,150);
+    }
+
+    function obstructs(tx,ty){
+        return (tx>=this.x&&tx<=(this.x+20)&&ty>=this.y&&ty<=(this.y+20));
+    }
+}

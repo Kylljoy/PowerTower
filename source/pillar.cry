@@ -1,0 +1,16 @@
+
+import Graphics2D;
+class pillar:tileWall{
+    constructor(x,y):base(x,y){
+
+    }
+
+    function isVoid(){
+        return false;
+    }
+    function draw(camx,camy){
+        Graphics2D.Draw.ellipse(this.x-camx,this.y-camy,20,20,100,100,100);
+        Graphics2D.Draw.ellipse(this.x-camx+4,this.y-camy+4,12,12,50,50,50);
+    }
+
+}

@@ -1,0 +1,25 @@
+class levelTwo:level{
+    function init(lives){
+        ref=levelManager.masterLevel;
+        ref.life=lives;
+        ref.reset();
+        GameplayScene.makeVoid(13,1,14,28);
+        GameplayScene.makeVoid(10,26,20,28);
+        GameplayScene.makeDoor(13,25,Facing.UP,Direction.RIGHT);
+        GameplayScene.makeDoor(14,25,Facing.UP,Direction.LEFT);
+        GameplayScene.makeDoor(12,3,Facing.RIGHT);
+        ref.setPosition(15*20,28*20);
+        GameplayScene.makeBlue(1,1,11,6);
+        GameplayScene.makeDoor(3,7,Facing.UP,Direction.RIGHT,true);
+        GameplayScene.makeWhite(1,8,10,11);
+        ref.addEnemy(3*20,3*20);
+        ref.addEnemy(2*20,9*20);
+        GameplayScene.makeBlue(27-11,1,29-1,6);
+        GameplayScene.makeDoor(27-12,3,Facing.LEFT);
+        GameplayScene.makeDoor(27-3,7,Facing.UP,Direction.RIGHT,true);
+        GameplayScene.makeWhite(27-10,8,27-1,11);
+        ref.addEnemy(17*20,5*20);
+    
+    }
+
+}

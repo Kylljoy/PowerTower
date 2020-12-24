@@ -1,0 +1,24 @@
+import Graphics2D;
+
+class crate:tile{
+    constructor(x,y):base(x,y){
+
+    }
+    function kick(ox,oy){
+        GameplayScene.Tiles[this.x/20][this.y/20]=new tile(this.x,this.y);
+        GameplayScene.Bullets.add(new crateProjectile(20*(this.x/20)+10,20*(this.y/20)+10,10+20*((this.x/20)+((this.x/20)-(ox/20))),10+20*((this.y/20)+(((this.y/20)-(oy/20))))));
+    }
+
+    function obstructs(tx,ty){
+        return (tx>=this.x&&tx<=(this.x+20)&&ty>=this.y&&ty<=(this.y+20));
+    }
+
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx,this.y-camy,20,20,100,50,0);
+        Graphics2D.Draw.rectangle(this.x-camx+5,this.y-camy+5,10,10,150,100,20);
+    }
+
+    function isVoid(){
+        return false;
+    }
+}

@@ -1,0 +1,13 @@
+import Graphics2D;
+
+class crateProjectile:bullet{
+    constructor(originx,originy,targetx,targety,owner=null):base(originx,originy,targetx,targety,owner){
+    }
+
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx-10,this.y-camy-10,20,20,100,50,0);
+        Graphics2D.Draw.rectangle(this.x-camx-5,this.y-camy-5,10,10,150,100,20);
+    }
+
+    
+}

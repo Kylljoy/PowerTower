@@ -1,0 +1,29 @@
+import Graphics2D;
+
+class pickup{
+
+    field x;
+    field r=50;
+    field g=50;
+    field b=50;
+    field y;
+
+    constructor(x,y){
+        this.x=x;
+        this.y=y;
+    }
+
+    function getType(){
+        return 0;
+    }
+
+    function pickUp(x,y){
+        return (((this.x-x)**2)+((this.y-y)**2))**0.5<=25;
+    }
+    
+    function draw(camx,camy){
+        Graphics2D.Draw.rectangle(this.x-camx-2,this.y-camy-2,4,4,this.r,this.g,this.b);
+    }
+
+
+}

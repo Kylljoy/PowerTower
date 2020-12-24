@@ -1,0 +1,24 @@
+
+class levelManager{
+    static field levelCounter=-1;
+    static field levels=[new levelOne(),new levelTwo(),new levelThree()];
+    static field masterLevel;
+
+    static function reset(){
+        levelManager.levelCounter=0;
+        levelManager.levels[0].init(3);
+    }
+    
+
+    static function nextLevel(lives){
+        levelManager.levelCounter++;
+        if(levelManager.levelCounter>=levelManager.levels.length){
+            levelManager.levelCounter=0;
+        }
+        levelManager.levels[levelManager.levelCounter].init(lives);
+
+    }
+
+
+    
+}
